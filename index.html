@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta Diploma | Clínica de la Convergencia</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <style>
+        body { 
+            background-color: #0B0B0B; 
+            color: #FFD700; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; /* Alineación vertical */
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        /* Nueva clase para la imagen externa */
+        .header-img-ext { 
+            width: 100%; 
+            max-width: 400px; 
+            margin-bottom: 20px; 
+        }
+        .container { 
+            background-color: #1A1A1A; 
+            padding: 30px; 
+            border: 2px solid #FFD700; 
+            border-radius: 15px; 
+            text-align: center; 
+            width: 400px; 
+        }
+        h2 { color: #87CEEB; margin-top: 0; } 
+        input { 
+            background-color: #000; 
+            color: #FFD700; 
+            border: 1px solid #FFD700; 
+            padding: 12px; 
+            width: 85%; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            text-align: center;
+        }
+        button { 
+            background-color: #FFD700; 
+            color: #000; 
+            border: none; 
+            padding: 12px 25px; 
+            margin: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 5px; 
+        }
+        button:hover { opacity: 0.9; }
+        .mensaje { margin: 20px 0; font-weight: bold; min-height: 25px; }
+        .instruccion { font-size: 0.85em; color: #87CEEB; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <img src="diploma_titulo.png" alt="Diploma" class="header-img-ext">
+
+    <div class="container">
+        <h2>CONSULTA SOBRE DIPLOMA</h2>
+        
+        <p class="instruccion">* Ingrese el nombre exactamente como figura en su registro (ej: RIOS Graciela)</p>
+        
+        <input type="text" id="nombreInput" placeholder="Ej: RIOS Graciela">
+        <button onclick="realizarConsulta()">Realizar consulta</button>
+        
+        <div id="mensajeEstado" class="mensaje"></div>
+        
+        <div style="margin: 20px 0;">
+            <img id="btnDescarga" 
+                 src="diplomaicono.png" 
+                 alt="Descargar Diploma" 
+                 onclick="abrirDrive()" 
+                 style="cursor: pointer; width: 150px; display: none;">
+        </div>
+        
+        <button onclick="window.close()" style="background-color: #555; color: #FFF;">Salir</button>
+    </div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD47_2UtWLFI_VRVvvXVAqn4zZzZ4d1ggo",
+        authDomain: "av-clinica-convergencia.firebaseapp.com",
+        databaseURL: "https://av-clinica-convergencia-default-rtdb.firebaseio.com",
+        projectId: "av-clinica-convergencia",
+        storageBucket: "av-clinica-convergencia.firebasestorage.app",
+        messagingSenderId: "939404425675",
+        appId: "1:939404425675:web:8cfae157099efabd741e4e"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const carpetas = {
+        "CAON FEDERICO": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing",
+        "PRAVAZ EMILIA": "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=drive_link",
+        "RIOS GRACIELA": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=drive_link",
+        "RODRIGUEZ RAMIRO": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=drive_link",
+        "SCHWAB GISELA": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=drive_link",
+        "STEFANINI BENZO ROMINA": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=drive_link"
+    };
+
+    let nombreGlobal = "";
+
+    async function realizarConsulta() {
+        const input = document.getElementById('nombreInput');
+        const mensajeDiv = document.getElementById('mensajeEstado');
+        const btnDescarga = document.getElementById('btnDescarga');
+        const nombreIngresado = input.value.trim();
+
+        if (!nombreIngresado) return alert("Por favor, ingrese un nombre.");
+
+        try {
+            const snap = await db.collection("registro_diplomas")
+                                 .where("alumno", "==", nombreIngresado)
+                                 .get();
+
+            if (!snap.empty) {
+                mensajeDiv.textContent = "Su Diploma ya se encuentra disponible";
+                mensajeDiv.style.color = "#FFD700";
+                nombreGlobal = nombreIngresado.toUpperCase();
+                btnDescarga.style.display = "inline-block";
+            } else {
+                mensajeDiv.textContent = "No hay datos para su Diploma, comuníquese con Dirección";
+                mensajeDiv.style.color = "#87CEEB";
+                nombreGlobal = "";
+                btnDescarga.style.display = "none";
+            }
+        } catch (e) {
+            console.error("Error BD:", e);
+            mensajeDiv.textContent = "Error al consultar la base de datos.";
+        }
+    }
+
+    function abrirDrive() {
+        const url = carpetas[nombreGlobal];
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            alert("No hay carpeta configurada para: " + nombreGlobal);
+        }
+    }
+</script>
+</body>
+</html>
