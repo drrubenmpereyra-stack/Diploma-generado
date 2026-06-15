@@ -1306,7 +1306,6 @@ window.gestionarDiploma = () => {
     vista.appendChild(contenedor);
 };
 // CALIFICACIONES (admnistrador)
-// --- FUNCIÓN PRINCIPAL DE GESTIÓN (La que llama el botón) ---
 window.gestionarCalificacionesAdmin = function() {
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; // Limpiamos la pantalla
@@ -1378,11 +1377,12 @@ window.confirmarBorrado = (docId) => {
 };
 // MIS CALIFICACIONES (ALUMNOS)
 window.gestionarMisCalificacionesAlumno = function() {
-    const nombreAlumno = usuarioActual.nombre; // Uso directo de su objeto existente
-    
+    // Tomamos el nombre directamente del objeto global que usted ya usa
+    const nombreAlumno = usuarioActual.nombre;
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; 
 
+    // Construcción de la interfaz manteniendo su estilo
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "padding: 20px; color: #fff;";
     contenedor.innerHTML = `
@@ -1391,6 +1391,7 @@ window.gestionarMisCalificacionesAlumno = function() {
             <thead>
                 <tr style="background: #1a1a1a; color: #fff;">
                     <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
+                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
                     <th style="padding: 15px; border: 1px solid #333;">Nota</th>
                     <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
                 </tr>
@@ -1400,7 +1401,9 @@ window.gestionarMisCalificacionesAlumno = function() {
     `;
     vista.appendChild(contenedor);
 
+    // Carga de datos directamente desde la colección que usted utiliza
     const tbody = document.getElementById('tabla-alumno-body');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando...</td></tr>';
 
     db.collection("resultados_test")
         .where("nombre", "==", nombreAlumno)
@@ -1413,11 +1416,16 @@ window.gestionarMisCalificacionesAlumno = function() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || '-'}</td>
-                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${data.detalle || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota || '-'}</td>
                     <td style="padding: 12px; border: 1px solid #333;">${data.fecha || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        })
+        .catch((err) => {
+            console.error("Error al cargar calificaciones:", err);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Error al cargar datos.</td></tr>';
         });
 };
 
