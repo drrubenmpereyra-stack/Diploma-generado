@@ -1376,11 +1376,18 @@ window.confirmarBorrado = (docId) => {
         });
     }
 };
-window.gestionarMisCalificacionesAlumno = function(nombreAlumno) {
-    const vista = document.getElementById('main-view');
-    vista.innerHTML = ''; // Limpiamos vista principal
+window.gestionarMisCalificacionesAlumno = function() {
+    // Verificamos si la variable existe en este momento
+    if (typeof usuarioActual === 'undefined' || !usuarioActual.nombre) {
+        console.error("Error: usuarioActual.nombre no está definido");
+        alert("Error de sesión: no se pudo identificar al alumno.");
+        return;
+    }
 
-    // Contenedor con estilo "La Convergencia"
+    const nombreAlumno = usuarioActual.nombre;
+    const vista = document.getElementById('main-view');
+    vista.innerHTML = ''; 
+
     const contenedor = document.createElement('div');
     contenedor.style.cssText = "padding: 20px; color: #fff; font-family: sans-serif;";
     
@@ -1391,7 +1398,6 @@ window.gestionarMisCalificacionesAlumno = function(nombreAlumno) {
             <thead>
                 <tr style="background: #1a1a1a; color: #D4AF37;">
                     <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
-                    <th style="padding: 15px; border: 1px solid #333;">Detalle</th>
                     <th style="padding: 15px; border: 1px solid #333;">Nota</th>
                     <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
                 </tr>
@@ -1402,44 +1408,23 @@ window.gestionarMisCalificacionesAlumno = function(nombreAlumno) {
     vista.appendChild(contenedor);
 
     const tbody = document.getElementById('tabla-alumno-body');
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Buscando calificaciones...</td></tr>';
-
-    // Búsqueda directa por el campo 'nombre' en la colección resultados_test
+    
     db.collection("resultados_test")
         .where("nombre", "==", nombreAlumno)
         .orderBy("fecha", "desc")
         .get()
         .then((querySnapshot) => {
-            tbody.innerHTML = ''; 
-
-            if (querySnapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Aún no hay calificaciones registradas para este usuario.</td></tr>';
-                return;
-            }
-
+            tbody.innerHTML = '';
             querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                
-                // Lógica de distinción Taller vs Test (igual a la auditoría)
-                const texto = data.Test_numero ? data.Test_numero.toLowerCase() : "";
-                const esTaller = texto.includes("taller");
-                const tipo = esTaller ? "Taller" : "Test";
-                const color = esTaller ? "#00FF88" : "#D4AF37";
-
+                const d = doc.data();
                 const tr = document.createElement('tr');
-                tr.style.borderBottom = "1px solid #333";
                 tr.innerHTML = `
-                    <td style="padding: 12px; color: ${color}; font-weight: bold;">${tipo}</td>
-                    <td style="padding: 12px;">${data.Test_numero || '-'}</td>
-                    <td style="padding: 12px; text-align: center;">${data.nota}</td>
-                    <td style="padding: 12px; font-size: 12px;">${data.fecha ? new Date(data.fecha).toLocaleDateString() : '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${d.Test_numero || 'Sin título'}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${d.nota}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${d.fecha || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
-        })
-        .catch((error) => {
-            console.error("Error al obtener calificaciones:", error);
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color: #ff4444;">Error al cargar datos.</td></tr>';
         });
 };
 
