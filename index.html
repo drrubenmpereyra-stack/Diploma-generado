@@ -1376,27 +1376,20 @@ window.confirmarBorrado = (docId) => {
         });
     }
 };
+// MIS CALIFICACIONES (ALUMNOS)
 window.gestionarMisCalificacionesAlumno = function() {
-    // Verificamos si la variable existe en este momento
-    if (typeof usuarioActual === 'undefined' || !usuarioActual.nombre) {
-        console.error("Error: usuarioActual.nombre no está definido");
-        alert("Error de sesión: no se pudo identificar al alumno.");
-        return;
-    }
-
-    const nombreAlumno = usuarioActual.nombre;
+    const nombreAlumno = usuarioActual.nombre; // Uso directo de su objeto existente
+    
     const vista = document.getElementById('main-view');
     vista.innerHTML = ''; 
 
     const contenedor = document.createElement('div');
-    contenedor.style.cssText = "padding: 20px; color: #fff; font-family: sans-serif;";
-    
+    contenedor.style.cssText = "padding: 20px; color: #fff;";
     contenedor.innerHTML = `
-        <button onclick="mostrarDashboard()" style="background: #8b0000; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">⬅ Volver al Panel</button>
-        <h2 style="color: #D4AF37; text-align: center;">Mis Calificaciones: ${nombreAlumno}</h2>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508; border: 1px solid #D4AF37;">
+        <h2 style="color: #D4AF37;">Mis Calificaciones: ${nombreAlumno}</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: #050508;">
             <thead>
-                <tr style="background: #1a1a1a; color: #D4AF37;">
+                <tr style="background: #1a1a1a; color: #fff;">
                     <th style="padding: 15px; border: 1px solid #333;">Actividad</th>
                     <th style="padding: 15px; border: 1px solid #333;">Nota</th>
                     <th style="padding: 15px; border: 1px solid #333;">Fecha</th>
@@ -1408,7 +1401,7 @@ window.gestionarMisCalificacionesAlumno = function() {
     vista.appendChild(contenedor);
 
     const tbody = document.getElementById('tabla-alumno-body');
-    
+
     db.collection("resultados_test")
         .where("nombre", "==", nombreAlumno)
         .orderBy("fecha", "desc")
@@ -1416,12 +1409,12 @@ window.gestionarMisCalificacionesAlumno = function() {
         .then((querySnapshot) => {
             tbody.innerHTML = '';
             querySnapshot.forEach((doc) => {
-                const d = doc.data();
+                const data = doc.data();
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="padding: 12px; border: 1px solid #333;">${d.Test_numero || 'Sin título'}</td>
-                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${d.nota}</td>
-                    <td style="padding: 12px; border: 1px solid #333;">${d.fecha || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${data.Test_numero || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #333; text-align: center;">${data.nota}</td>
+                    <td style="padding: 12px; border: 1px solid #333;">${data.fecha || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
